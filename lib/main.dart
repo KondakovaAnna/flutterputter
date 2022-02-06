@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:myproject/map.dart';
+
+import 'location.dart';
 
 void main() {
   runApp(const MyApp());
@@ -105,10 +108,27 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              var pos = await determinePosition();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) { print("Helicopta");return MapSample(pos);}
+                ),
+              );
+            },
+            tooltip: 'decrement',
+            child: const Icon(Icons.add),
+          ),
+          FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+        ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
