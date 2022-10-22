@@ -76,7 +76,7 @@ class MapSampleState extends State<MapSample> {
           Align(
             alignment: Alignment.topLeft,
             child: Padding(
-              padding: const EdgeInsets.only(left:16.0, top:25.0),
+              padding: const EdgeInsets.only(left:16.0, top:50.0),
               child: GestureDetector(
                 onTap: Navigator.of(context).pop,
                 child: const Icon(Icons.arrow_back_ios_rounded),
