@@ -6,7 +6,9 @@ import 'package:myproject/camera_screen.dart';
 import 'package:myproject/services/network.dart' as network;
 import 'package:myproject/map.dart';
 import 'package:myproject/history.dart';
-
+import 'package:myproject/authorization.dart';
+import 'package:myproject/registration.dart';
+import 'package:myproject/plant_page.dart';
 
 import 'location.dart';
 
@@ -63,18 +65,18 @@ class _MyHomePageState extends State<MyHomePage> {
           .push(MaterialPageRoute(builder: (_) => MapSample(pos)));
       return;
     } else if (index == 1) {
-      final cameras = await availableCameras();
-      final firstCamera = cameras.first;
-      Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => CameraScreen(camera: firstCamera)));
+      /*final cameras = await availableCameras();
+      final firstCamera = cameras.first;*/
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => CameraScreen()));
       return;
     } else if (index == 0) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => History()));
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => History()));
       return;
       //_body = Text("History");
       //setState(() {
-        //history_color = history_active_color;
+      //history_color = history_active_color;
       //});
     }
     setState(() {
@@ -94,7 +96,12 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.only(left: 16.0, top: 50.0),
               child: GestureDetector(
                 onTap: Navigator.of(context).pop,
-                child: const Icon(Icons.account_circle_rounded, size: 45.0, color: Colors.white),
+                child: IconButton(
+                  icon: Icon(Icons.account_circle_rounded,
+                      size: 45.0, color: Colors.white),
+                  onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Authorization())),
+                ),
               ),
             ),
           ),
@@ -111,6 +118,11 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Icon(Icons.history, size: 50, color: history_color),
           ),
           const Icon(Icons.photo_camera, size: 64, color: Color(0xFF89C09F)),
+          /*Container(
+            width: 64.0,
+            height: 64.0,
+            color: Color(0xFF89C09F),
+          ),*/
           Padding(
             padding: const EdgeInsets.all(25.0),
             child: Icon(Icons.location_on, size: 50, color: map_color),

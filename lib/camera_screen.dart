@@ -1,36 +1,48 @@
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:myproject/plant_page.dart';
 
 // A screen that allows users to take a picture using a given camera.
 class CameraScreen extends StatefulWidget {
   const CameraScreen({
     Key? key,
-    required this.camera,
+    //required this.camera,
   }) : super(key: key);
 
-  final CameraDescription camera;
+  //final CameraDescription camera;
 
   @override
   CameraScreenState createState() => CameraScreenState();
 }
 
 class CameraScreenState extends State<CameraScreen> {
+  late CameraDescription camera;
   late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
+   Future<void> _initializeControllerFuture()async{
+     final cameras = await availableCameras();
+     final firstCamera = cameras.first;
+     _controller = CameraController(
+
+       firstCamera,
+       ResolutionPreset.medium,
+     );
+     _controller.setFlashMode(FlashMode.off);
+     await _controller.initialize();
+   }
   int selectedCamera = 0;
   List<File> capturedImage = [];
 
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(
+    /*_controller = CameraController(
+
       widget.camera,
       ResolutionPreset.medium,
     );
-    _initializeControllerFuture = _controller.initialize();
+    _initializeControllerFuture = _controller.initialize();*/
   }
 
   @override
@@ -42,10 +54,11 @@ class CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //_controller.setFlashMode(FlashMode.off);
     // Fill this out in the next steps.
     return Scaffold(
       body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
+        future: _initializeControllerFuture(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.
@@ -56,8 +69,12 @@ class CameraScreenState extends State<CameraScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        SizedBox(child: CameraPreview(_controller),height: 745.0),
-                        Container(height: 121.25, color: Colors.black,)
+                        SizedBox(
+                            child: CameraPreview(_controller), height: 745.0),
+                        Container(
+                          height: 121.25,
+                          color: Colors.black,
+                        )
                       ],
                     )),
                 Align(
@@ -87,6 +104,8 @@ class CameraScreenState extends State<CameraScreen> {
                           } catch (error) {
                             print(error);
                           }
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => PlantPage()));
                         },
                         child: const Icon(Icons.camera_alt, size: 56.0),
                       ),
@@ -96,14 +115,20 @@ class CameraScreenState extends State<CameraScreen> {
                 Align(
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 94.0, right: 15.0),
-                    child: Image.asset('assets/images/camera_frame.png', width: 400),
-                    ),
+                    child: Image.asset('assets/images/camera_frame.png',
+                        width: 400),
                   ),
-                Align(
+                ),
+                const Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 144.0, right: 15.0),
-                    child: Text("Убедитесь, что растение находится" '\n' "в фокусе", maxLines: 2, textAlign: TextAlign.center, style: TextStyle(fontSize: 18,color: const Color(0xFF9B9B9B) )),
+                    padding: EdgeInsets.only(bottom: 144.0, right: 15.0),
+                    child: Text(
+                        "Убедитесь, что растение находится" '\n' "в фокусе",
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 18, color: Color(0xFF9B9B9B))),
                   ),
                 ),
               ],
