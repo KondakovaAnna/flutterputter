@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'location.dart';
+import 'package:myproject/classes/Plant.dart';
 
-class SuperMarker {
+/*class SuperMarker {
   double latitude;
   double longitude;
   String info;
@@ -14,7 +15,7 @@ class SuperMarker {
     required this.longitude,
     required this.info,
   });
-}
+}*/
 
 class MapSample extends StatefulWidget {
   final LatLng initPos;
@@ -25,34 +26,53 @@ class MapSample extends StatefulWidget {
 }
 
 class MapSampleState extends State<MapSample> {
-  Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
+  //Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
   late int _markerIdCounter;
   final int _defIdValue = 0;
   final double zoom = 18.0;
   final Completer<GoogleMapController> _controller = Completer();
-  List<SuperMarker> supa = [];
+  List<Plant_with_coordinate> supa = [];
+
+  Plant_with_coordinate? _selectedPlace;
+
+  void _unselectPlace() {
+    setState(() {
+      _selectedPlace = null;
+    });
+  }
+
+  void _selectPlace(Plant_with_coordinate place) {
+    setState(() {
+      _selectedPlace = place;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     for (var i = 1; i < 4; i++) {
       supa.add(
-        SuperMarker(
-            info: i.toString(),
+        Plant_with_coordinate(
+            p: Plant(
+              name: "name",
+              info: "info$i",
+              picture: 'assets/images/monstera(zoom).jpg',
+            ),
             latitude: widget.initPos.latitude + 0.25 * i,
             longitude: widget.initPos.longitude + 0.25 * i),
       );
     }
   }
 
-  Set<Marker> _convert(List<SuperMarker> supa) {
+  Set<Marker> _convert(List<Plant_with_coordinate> supa) {
     Set<Marker> res = {};
     for (var i in supa) {
       res.add(
         Marker(
-          infoWindow: InfoWindow(title: i.info),
+          infoWindow: InfoWindow(title: i.p.name),
           position: LatLng(i.latitude, i.longitude),
-          markerId: MarkerId(i.info),
+          markerId: MarkerId(i.p.info),
+          onTap: () => _selectPlace(i),
         ),
       );
     }
@@ -72,11 +92,12 @@ class MapSampleState extends State<MapSample> {
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
             },
+            onTap: (_) => _unselectPlace(),
           ),
           Align(
             alignment: Alignment.topLeft,
             child: Padding(
-              padding: const EdgeInsets.only(left:16.0, top:50.0),
+              padding: const EdgeInsets.only(left: 16.0, top: 50.0),
               child: GestureDetector(
                 onTap: Navigator.of(context).pop,
                 child: const Icon(Icons.arrow_back_ios_rounded),
@@ -97,6 +118,33 @@ class MapSampleState extends State<MapSample> {
               ),
             ),
           ),
+          if (_selectedPlace != null)
+            Positioned(
+              left: 50.0,
+              bottom: 76,
+              child: PhysicalModel(
+                color: Colors.black,
+                shadowColor: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
+                elevation: 12,
+                child: Container(
+                  height: 100.0,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    children:[
+                      Image.asset(_selectedPlace!.p.picture, width: 100.0, fit: BoxFit.cover),
+                      Text(_selectedPlace!.p.name),
+                      Text(_selectedPlace!.p.info),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -132,8 +180,12 @@ class MapSampleState extends State<MapSample> {
 
   Future<void> _addMarker() async {
     var pos = await determinePosition();
-    SuperMarker newsupa = SuperMarker(
-        info: "${pos.latitude}+${pos.longitude}",
+    Plant_with_coordinate newsupa = Plant_with_coordinate(
+        p: Plant(
+          info: "${pos.latitude}+${pos.longitude}",
+          name: 'name',
+          picture: 'assets/images/monstera(zoom).jpg',
+        ),
         latitude: pos.latitude,
         longitude: pos.longitude);
     supa.add(newsupa);
