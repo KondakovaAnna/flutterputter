@@ -65,10 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
           .push(MaterialPageRoute(builder: (_) => MapSample(pos)));
       return;
     } else if (index == 1) {
-      /*final cameras = await availableCameras();
-      final firstCamera = cameras.first;*/
+      final cameras = await availableCameras();
+      final firstCamera = cameras.first;
       Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => CameraScreen()));
+          .push(MaterialPageRoute(builder: (_) => CameraScreen(camera:firstCamera)));
       return;
     } else if (index == 0) {
       Navigator.of(context)

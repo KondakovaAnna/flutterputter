@@ -15,6 +15,7 @@ class _RegistrationState extends State<Registration> {
   Widget build(BuildContext context) {
     print("rebuilding");
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF89C09F),
       body: Center(
         child: Container(

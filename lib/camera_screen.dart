@@ -8,10 +8,10 @@ import 'package:myproject/plant_page.dart';
 class CameraScreen extends StatefulWidget {
   const CameraScreen({
     Key? key,
-    //required this.camera,
+    required this.camera,
   }) : super(key: key);
 
-  //final CameraDescription camera;
+  final CameraDescription camera;
 
   @override
   CameraScreenState createState() => CameraScreenState();
@@ -20,29 +20,19 @@ class CameraScreen extends StatefulWidget {
 class CameraScreenState extends State<CameraScreen> {
   late CameraDescription camera;
   late CameraController _controller;
-   Future<void> _initializeControllerFuture()async{
-     final cameras = await availableCameras();
-     final firstCamera = cameras.first;
-     _controller = CameraController(
-
-       firstCamera,
-       ResolutionPreset.medium,
-     );
-     _controller.setFlashMode(FlashMode.off);
-     await _controller.initialize();
-   }
+  late Future<void> _initializeControllerFuture;
   int selectedCamera = 0;
   List<File> capturedImage = [];
 
   @override
   void initState() {
     super.initState();
-    /*_controller = CameraController(
-
+    _controller = CameraController(
       widget.camera,
       ResolutionPreset.medium,
     );
-    _initializeControllerFuture = _controller.initialize();*/
+
+    _initializeControllerFuture = _controller.initialize();
   }
 
   @override
@@ -54,11 +44,11 @@ class CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //_controller.setFlashMode(FlashMode.off);
+    _controller.setFlashMode(FlashMode.off);
     // Fill this out in the next steps.
     return Scaffold(
       body: FutureBuilder<void>(
-        future: _initializeControllerFuture(),
+        future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.

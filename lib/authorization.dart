@@ -16,6 +16,7 @@ class _AuthorizationState extends State<Authorization> {
   Widget build(BuildContext context) {
     print("rebuilding");
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF89C09F),
       body: Center(
         child: Container(
