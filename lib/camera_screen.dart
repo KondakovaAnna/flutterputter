@@ -1,8 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:myproject/plant_page.dart';
+import 'package:myproject/services/network.dart';
+import 'location.dart';
+import 'package:myproject/classes/Plant.dart';
+
+
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:async/async.dart';
+import 'globals.dart' as globals;
+
 
 // A screen that allows users to take a picture using a given camera.
 class CameraScreen extends StatefulWidget {
@@ -52,6 +62,19 @@ class CameraScreenState extends State<CameraScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.
+            final r= {
+              "plantname": "plantname",
+              "plantinfo": "info",
+              "picture":"picture"
+            };
+            Plant p = new Plant.fromJson(r);
+            final rc= {
+              "latitude": 0.0,
+              "longitude": 0.0,
+              "date":DateTime.now().toString(),
+              "plant":r
+            };
+            Plant_with_coordinate info = new Plant_with_coordinate.fromJson(rc);
             return Stack(
               children: [
                 Container(
@@ -91,11 +114,20 @@ class CameraScreenState extends State<CameraScreen> {
                           try {
                             await _initializeControllerFuture;
                             final image = await _controller.takePicture();
+                            var pos = await determinePosition();
+                            var pic = await http.MultipartFile.fromPath("image", image.path);
+                            //send image
+
+                            NetworkWorker action = new NetworkWorker();
+                            info = await action.ImageClassification(DateTime.now(),pos.latitude,pos.longitude, pic);
+                            globals.list_of_plants.add(info);
+                            //print(globals.inf.name);
+
                           } catch (error) {
                             print(error);
                           }
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => PlantPage()));
+                              builder: (context) => PlantPage(info)));
                         },
                         child: const Icon(Icons.camera_alt, size: 56.0),
                       ),

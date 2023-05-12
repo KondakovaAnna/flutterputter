@@ -2,38 +2,54 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'location.dart';
 import 'dart:io';
+import 'package:myproject/plant_page.dart';
+import 'package:myproject/classes/Plant.dart';
+import 'globals.dart' as globals;
 
 class HistoryPane extends StatelessWidget {
-  HistoryPane({Key? key}) : super(key: key);
+  //HistoryPane({Key? key}) : super(key: key);
+  final Plant_with_coordinate information;
+  const HistoryPane(this.information);
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      const CircleAvatar(
-          backgroundColor: Color(0xFFCAC76D),
-          radius: 50,
-          child: CircleAvatar(
-              radius: 47,
-              backgroundImage: ExactAssetImage('assets/images/monstera.jpg'))),
-      const Positioned.fill(
-        child: Align(
-          child: Text("Монстера",
-              style: TextStyle(fontFamily: 'BoldMontserrat', fontSize: 16)),
-          alignment: Alignment(-0.17, 0.1),
+    var plant_name = information.p.name;
+    var plant_picture = information.p.picture;
+    var plant_date = information.time;
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => PlantPage(information)));
+      },
+      child: Stack(children: [
+         CircleAvatar(
+            backgroundColor: const Color(0xFFCAC76D),
+            radius: 50,
+            child: CircleAvatar(
+                radius: 47,
+                backgroundImage:
+                    ExactAssetImage(plant_picture))),
+         Positioned.fill(
+          child: Align(
+            child: Text(plant_name,
+                textAlign: TextAlign.left,
+                style: const TextStyle(fontFamily: 'BoldMontserrat', fontSize: 16)),
+            alignment: const Alignment(-0.17, 0.1),
+          ),
         ),
-      ),
-      Positioned.fill(
-        child: Align(
-          child: Text("Дата",
-              style: TextStyle(
-                  color: Colors.black.withOpacity(0.4),
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13)),
-          alignment: const Alignment(0.97, -0.97),
+        Positioned.fill(
+          child: Align(
+            child: Text("${plant_date.day.toString()}.${plant_date.month.toString().padLeft(2,'0')}",
+                style: TextStyle(
+                    color: Colors.black.withOpacity(0.4),
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
+            alignment: const Alignment(0.97, -0.97),
+          ),
         ),
-      ),
-    ]);
+      ]),
+    );
   }
 }
 
@@ -45,19 +61,13 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
+  late List<Widget> histories;
   @override
   void initState() {
-    histories = [
-      HistoryPane(key: Key("1")),
-      HistoryPane(key: Key("2")),
-      HistoryPane(key: Key("3")),
-      HistoryPane(key: Key("4")),
-      HistoryPane(key: Key("5")),
-    ];
+    var plants = new List.from(globals.list_of_plants.reversed);
+    histories = plants.map((e) => HistoryPane(e)).toList();
     super.initState();
   }
-
-  late List<Widget> histories;
 
   @override
   Widget build(BuildContext context) {
@@ -85,12 +95,12 @@ class _HistoryState extends State<History> {
             ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            histories.add(HistoryPane(key: Key("${histories.length}")));
-            setState(() {});
-          },
-        ),
+       // floatingActionButton: FloatingActionButton(
+         // onPressed: () {
+           // histories.add(HistoryPane(key: Key("${histories.length}")));
+           // setState(() {});
+         // },
+        //),
         body: HistoryBody(histories));
   }
 }
@@ -104,7 +114,7 @@ class HistoryBody extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(0),
       child: ListView.separated(
-        padding: const EdgeInsets.only(top: 11.0, left: 11.0, right: 10.0),
+        padding: const EdgeInsets.only(top: 11.0, left: 11.0, right: 10.0, bottom: 15.0),
         separatorBuilder: (context, index) => Divider(
           endIndent: 30,
           indent: 30,

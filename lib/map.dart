@@ -5,6 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'location.dart';
 import 'package:myproject/classes/Plant.dart';
+import 'globals.dart' as globals;
+import 'package:myproject/plant_page.dart';
 
 /*class SuperMarker {
   double latitude;
@@ -17,9 +19,22 @@ import 'package:myproject/classes/Plant.dart';
   });
 }*/
 
+var default_pin =
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
+var selected_pin =
+    BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+
+class MarkerPlant {
+  MarkerId mid;
+  Plant_with_coordinate plant;
+  MarkerPlant({
+    required this.mid,
+    required this.plant,
+  });
+}
+
 class MapSample extends StatefulWidget {
   final LatLng initPos;
-
   MapSample(this.initPos);
   @override
   State<MapSample> createState() => MapSampleState();
@@ -32,62 +47,87 @@ class MapSampleState extends State<MapSample> {
   final double zoom = 18.0;
   final Completer<GoogleMapController> _controller = Completer();
   List<Plant_with_coordinate> supa = [];
+  List<Marker> markers = [];
+  MarkerPlant? _selectedPlace;
 
-  Plant_with_coordinate? _selectedPlace;
+  void unselect() {
+    var marker_index = markers
+        .indexWhere((element) => element.markerId == _selectedPlace!.mid);
+    var new_marker = markers[marker_index];
+    markers[marker_index] = new_marker.copyWith(iconParam: default_pin);
+  }
 
   void _unselectPlace() {
     setState(() {
+      unselect();
       _selectedPlace = null;
     });
   }
 
-  void _selectPlace(Plant_with_coordinate place) {
+  void _selectPlace(MarkerPlant place) {
     setState(() {
+      if (_selectedPlace != null) unselect();
       _selectedPlace = place;
+      var marker_index = markers
+          .indexWhere((element) => element.markerId == _selectedPlace!.mid);
+      var new_marker = markers[marker_index];
+      markers[marker_index] = new_marker.copyWith(iconParam: selected_pin);
     });
   }
 
   @override
   void initState() {
     super.initState();
-    for (var i = 1; i < 4; i++) {
-      supa.add(
-        Plant_with_coordinate(
-            p: Plant(
-              name: "name",
-              info: "info$i",
-              picture: 'assets/images/monstera(zoom).jpg',
-            ),
-            latitude: widget.initPos.latitude + 0.25 * i,
-            longitude: widget.initPos.longitude + 0.25 * i),
-      );
-    }
+    var plants = globals.list_of_plants;
+    supa = plants;
+    //for (var i = 1; i < 4; i++) {
+    // supa.add(
+    //Plant_with_coordinate(
+    //p: Plant(
+    //name: "name",
+    //info: "info$i",
+    // picture: 'assets/images/monstera(zoom).jpg',
+    //),
+    //latitude: widget.initPos.latitude + 0.25 * i,
+    //longitude: widget.initPos.longitude + 0.25 * i,
+    //time: DateTime.now(),
+    //),
+    //);
+    //}
+    markers = _convert(supa);
   }
 
-  Set<Marker> _convert(List<Plant_with_coordinate> supa) {
-    Set<Marker> res = {};
+  List<Marker> _convert(List<Plant_with_coordinate> supa) {
+    List<Marker> res = [];
     for (var i in supa) {
       res.add(
-        Marker(
-          infoWindow: InfoWindow(title: i.p.name),
-          position: LatLng(i.latitude, i.longitude),
-          markerId: MarkerId(i.p.info),
-          onTap: () => _selectPlace(i),
-        ),
+        marker_from_pwc(i),
       );
     }
     return res;
+  }
+
+  Marker marker_from_pwc(Plant_with_coordinate pwc) {
+    var mid = MarkerId(pwc.p.info);
+    return Marker(
+      infoWindow: InfoWindow(title: pwc.p.name),
+      position: LatLng(pwc.latitude, pwc.longitude),
+      icon: default_pin,
+      markerId: mid,
+      onTap: () => _selectPlace(MarkerPlant(mid: mid, plant: pwc)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
+        alignment: Alignment.center,
         children: [
           GoogleMap(
             initialCameraPosition:
                 CameraPosition(target: widget.initPos, zoom: zoom),
-            markers: _convert(supa),
+            markers: markers.toSet(),
             myLocationEnabled: true,
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
@@ -106,41 +146,71 @@ class MapSampleState extends State<MapSample> {
               ),
             ),
           ),
-          Align(
+          /*Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: FloatingActionButton(
                 heroTag: "add",
-                onPressed: _addMarker,
+                onPressed: initState,
                 backgroundColor: const Color(0xFF89C09F),
                 child: const Icon(Icons.add),
               ),
             ),
-          ),
+          ),*/
           if (_selectedPlace != null)
-            Positioned(
-              left: 50.0,
-              bottom: 76,
-              child: PhysicalModel(
-                color: Colors.black,
-                shadowColor: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(12),
-                elevation: 12,
-                child: Container(
-                  height: 100.0,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.max,
-                    children:[
-                      Image.asset(_selectedPlace!.p.picture, width: 100.0, fit: BoxFit.cover),
-                      Text(_selectedPlace!.p.name),
-                      Text(_selectedPlace!.p.info),
-                    ],
+            Padding(
+              padding: const EdgeInsets.only(bottom: 45.0),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: PhysicalModel(
+                  color: Colors.black,
+                  shadowColor: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                  elevation: 12,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              PlantPage(_selectedPlace!.plant)));
+                    },
+                    child: Container(
+                      width: 370.0,
+                      height: 110.0,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      child: Row(
+                        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Image.asset(_selectedPlace!.plant.p.picture,
+                              width: 150.0, fit: BoxFit.cover),
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 15.0, top: 15.0),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Text(
+                                    _selectedPlace!.plant.p.name,
+                                    textAlign: TextAlign.left,
+                                    style: const TextStyle(
+                                        fontFamily: 'BoldMontserrat',
+                                        fontSize: 18),
+                                  ),
+                                ),
+                                Text(
+                                    "${_selectedPlace!.plant.time.day.toString().padLeft(2, '0')}/${_selectedPlace!.plant.time.month.toString().padLeft(2, '0')}/${_selectedPlace!.plant.time.year.toString()}",
+                                    textAlign: TextAlign.left),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -168,45 +238,5 @@ class MapSampleState extends State<MapSample> {
         CameraPosition(target: position, zoom: 17),
       ),
     );
-    /*controller.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: position,
-          zoom: zoom,
-        ),
-      ),
-    );*/
-  }
-
-  Future<void> _addMarker() async {
-    var pos = await determinePosition();
-    Plant_with_coordinate newsupa = Plant_with_coordinate(
-        p: Plant(
-          info: "${pos.latitude}+${pos.longitude}",
-          name: 'name',
-          picture: 'assets/images/monstera(zoom).jpg',
-        ),
-        latitude: pos.latitude,
-        longitude: pos.longitude);
-    supa.add(newsupa);
-    setState(() {});
-  }
-
-  Future<void> _goToMyPosition() async {
-    var pos = await determinePosition();
-    moveCamera(pos);
   }
 }
-
-/*Future<void> _goToMyPosition() async {
-    final GoogleMapController controller = await _controller.future;
-    var pos = await determinePosition();
-    controller.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: pos,
-        ),
-      ),
-    );
-  }
-}*/

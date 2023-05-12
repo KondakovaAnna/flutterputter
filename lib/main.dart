@@ -9,8 +9,10 @@ import 'package:myproject/history.dart';
 import 'package:myproject/authorization.dart';
 import 'package:myproject/registration.dart';
 import 'package:myproject/plant_page.dart';
-
+import 'package:splashscreen/splashscreen.dart';
 import 'location.dart';
+import 'package:myproject/services/network.dart';
+import 'globals.dart' as globals;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +22,12 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
+  Future<Widget> loadFromFuture() async {
+    NetworkWorker action = new NetworkWorker();
+    globals.list_of_plants = await action.Start(2);
+    // Fetch any value from server
+    return Future.value(MyHomePage(title: 'Flutter Demo Home Page'));
+  }
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -29,7 +37,18 @@ class MyApp extends StatelessWidget {
       //primarySwatch: Colors.lightGreen,
       //),
       theme: ThemeData(scaffoldBackgroundColor: const Color(0xFF89C09F)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: SplashScreen(
+          navigateAfterFuture: loadFromFuture(),
+          //seconds: 5,
+          //navigateAfterSeconds:
+              //const MyHomePage(title: 'Flutter Demo Home Page'),
+          image: new Image.asset('assets/images/logo1.png'),
+          photoSize: 100.0,
+          backgroundColor: const Color(0xFF89C09F),
+          styleTextUnderTheLoader: new TextStyle(),
+          loaderColor: const Color(0xFFE4E4A3)),
+
+      //home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -67,8 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (index == 1) {
       final cameras = await availableCameras();
       final firstCamera = cameras.first;
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => CameraScreen(camera:firstCamera)));
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => CameraScreen(camera: firstCamera)));
       return;
     } else if (index == 0) {
       Navigator.of(context)
